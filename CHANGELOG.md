@@ -37,6 +37,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - DTOs: `CreateReviewDto` (with class-validator decorators), `CreateReviewResponseDto`, `GetReviewResponseDto` (with Swagger decorators)
 - Swagger annotations: `@ApiTags`, `@ApiOperation`, `@ApiResponse`, `@ApiParam`, `@ApiProperty` on all endpoints and DTOs
 - `GET /health` endpoint — returns `{ "status": "ok" }` for uptime checks (Swagger documented)
+- Unit tests (11 tests, 3 suites):
+  - `ReviewsService`: create returns UUID, unique IDs, findOne returns record, 404 for missing, TTL expiration deletes record, within-TTL still returns, onModuleDestroy clears interval
+  - `ReviewsController`: create delegates to service, findOne returns response, throws NotFoundException for missing
+  - `HealthController`: check returns `{ status: "ok" }`
+- Jest `transformIgnorePatterns` for `uuid` v13 ESM compatibility
+- ESLint: disable `unbound-method` rule for spec files
 
 ### Removed
 - Default `AppController`, `AppService`, and `AppController` spec (replaced by ReviewsModule)
