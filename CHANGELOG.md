@@ -50,5 +50,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Jest e2e config: `transformIgnorePatterns` for `uuid` v13 ESM compatibility
 - ESLint: disable `no-unsafe-member-access` and `no-unsafe-assignment` for test files
 
+### Changed
+- `AGENTS.md` updated with final folder structure, setup instructions, actual test counts, and script descriptions
+
 ### Removed
 - Default `AppController`, `AppService`, and `AppController` spec (replaced by ReviewsModule)

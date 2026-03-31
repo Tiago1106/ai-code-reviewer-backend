@@ -63,23 +63,62 @@ Depois do MVP: integração com Ollama, persistência no Postgres, GitHub OAuth,
 - Node.js: usar a versão instalada no ambiente (evitar APIs experimentais)
 - Gerenciador: npm
 
-## Estrutura de pastas (planejada)
-- `src/main.ts`
-- `src/app.module.ts`
-- `src/reviews/`
-- `src/reviews/reviews.module.ts`
-- `src/reviews/reviews.controller.ts`
-- `src/reviews/reviews.service.ts`
-- `src/reviews/dto/`
-- `src/reviews/types/`
+## Estrutura de pastas
+```
+backend/
+├── src/
+│   ├── main.ts                          # Bootstrap (Express, CORS, Swagger, ValidationPipe)
+│   ├── app.module.ts                    # Root module (ConfigModule, ReviewsModule, HealthController)
+│   ├── health.controller.ts             # GET /health
+│   ├── health.controller.spec.ts        # Unit test — HealthController
+│   └── reviews/
+│       ├── reviews.module.ts            # ReviewsController + ReviewsService
+│       ├── reviews.controller.ts        # POST /reviews, GET /reviews/:id
+│       ├── reviews.controller.spec.ts   # Unit tests — ReviewsController
+│       ├── reviews.service.ts           # In-memory Map + TTL + cleanup
+│       ├── reviews.service.spec.ts      # Unit tests — ReviewsService
+│       ├── dto/
+│       │   ├── create-review.dto.ts     # Input validation (class-validator)
+│       │   ├── create-review-response.dto.ts
+│       │   ├── get-review-response.dto.ts
+│       │   └── index.ts                 # Barrel exports
+│       ├── types/
+│       │   ├── language.enum.ts         # Language enum (js, ts, py, go, java)
+│       │   ├── review-result.interface.ts
+│       │   ├── review-record.interface.ts
+│       │   └── index.ts                 # Barrel exports (export type)
+│       └── fixtures/
+│           └── mock-review.fixture.ts   # Rich mock ReviewResult
+├── test/
+│   ├── app.e2e-spec.ts                  # E2E tests (9 tests)
+│   └── jest-e2e.json                    # Jest e2e config
+├── .env                                 # Local env vars (gitignored)
+├── .env.example                         # Template with documented defaults
+├── package.json                         # Dependencies + Jest unit config
+├── tsconfig.json                        # strict: true, nodenext, emitDecoratorMetadata
+├── tsconfig.build.json                  # Build config (excludes tests)
+├── eslint.config.mjs                    # Flat config + overrides for spec files
+├── nest-cli.json                        # NestJS CLI config
+└── .prettierrc                          # Prettier config
+```
 
 ## Como rodar (MVP)
 - Porta: `3001`
 - Origin do frontend liberado via CORS: `WEB_ORIGIN` (padrão `http://localhost:3000`)
 
-Comandos (npm):
-- `npm install`
-- `npm run start:dev`
+### Setup rápido
+```bash
+git clone git@github.com:Tiago1106/ai-code-reviewer-backend.git
+cd ai-code-reviewer-backend
+cp .env.example .env        # ajustar variáveis se necessário
+npm install
+npm run start:dev           # http://localhost:3001
+```
+
+Verificar:
+- API: `GET http://localhost:3001/health` → `{ "status": "ok" }`
+- Swagger: `http://localhost:3001/docs`
+- Testes: `npm run test` (unit) / `npm run test:e2e` (e2e)
 
 ## Documentação (Swagger)
 Objetivo:
@@ -308,22 +347,31 @@ curl -X POST http://localhost:3001/reviews \
 ```
 
 ## Testes automatizados (MVP)
-Estratégia mínima:
 
-Unit tests:
-- `ReviewsService`: testar criação, busca, expiração (TTL) e cleanup
-- Mockar `Date.now()` para testar TTL sem esperar
+### Cobertura atual
+- **Unit tests**: 11 tests, 3 suites — `npm run test`
+- **E2E tests**: 9 tests, 1 suite — `npm run test:e2e`
+- **Total**: 20 tests, todos passando
 
-E2E tests:
-- `POST /reviews`: retorna 201 com `{ id }` para input válido; retorna 400 para input inválido
-- `GET /reviews/:id`: retorna 200 com resultado; retorna 404 para ID inexistente
-- `GET /health`: retorna 200
+### Unit tests (src/)
+- `ReviewsService` (7 tests): create retorna UUID, IDs únicos, findOne retorna record, 404 para inexistente, TTL expirado deleta, dentro do TTL retorna, onModuleDestroy limpa interval
+- `ReviewsController` (3 tests): create delega ao service, findOne retorna response, lança NotFoundException para inexistente
+- `HealthController` (1 test): check retorna `{ status: "ok" }`
 
-Ferramentas:
-- Jest (incluso no NestJS)
+### E2E tests (test/)
+- `GET /health` (1 test): retorna 200 com `{ status: "ok" }`
+- `POST /reviews` (6 tests): 201 input válido, 201 com context opcional, 400 language inválida, 400 code vazio, 400 code ausente, 400 campos desconhecidos
+- `GET /reviews/:id` (2 tests): 200 com resultado completo, 404 para ID inexistente
+
+### Observações técnicas
+- `uuid` v13 é ESM-only: `transformIgnorePatterns` configurado em `package.json` (unit) e `test/jest-e2e.json` (e2e)
+- ESLint: `unbound-method`, `no-unsafe-member-access`, `no-unsafe-assignment` desabilitados para arquivos `*.spec.ts` e `*.e2e-spec.ts`
+
+### Ferramentas
+- Jest 30 (incluso no NestJS)
 - Supertest para e2e
 
-Scripts:
+### Scripts
 - `npm run test` (unit)
 - `npm run test:e2e` (e2e)
 
@@ -358,12 +406,14 @@ A API pode retornar conteúdo em inglês no mock (ou neutro). A localização (P
 - Logs com request id (correlation)
 - Métricas simples (tempo de processamento e taxa de erro)
 
-## Scripts (quando o projeto for criado)
-- `npm run start:dev`
-- `npm run build`
-- `npm run start:prod`
-- `npm run lint`
-- `npm run test`
+## Scripts
+- `npm run start:dev` — inicia o servidor em modo watch (desenvolvimento)
+- `npm run build` — compila TypeScript para `dist/`
+- `npm run start:prod` — inicia o servidor a partir de `dist/main.js`
+- `npm run lint` — executa ESLint (flat config)
+- `npm run test` — executa unit tests (Jest)
+- `npm run test:e2e` — executa e2e tests (Jest + Supertest)
+- `npm run test:cov` — unit tests com coverage report
 
 ### Nova feature: GitHub OAuth + Review de PR
 - Login via GitHub OAuth
