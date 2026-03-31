@@ -43,6 +43,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - `HealthController`: check returns `{ status: "ok" }`
 - Jest `transformIgnorePatterns` for `uuid` v13 ESM compatibility
 - ESLint: disable `unbound-method` rule for spec files
+- E2E tests (9 tests, 1 suite):
+  - `GET /health`: returns 200 with `{ status: "ok" }`
+  - `POST /reviews`: 201 for valid input, 201 with optional context, 400 for invalid language, 400 for empty code, 400 for missing code, 400 for unknown fields
+  - `GET /reviews/:id`: 200 with full review result for valid id, 404 for non-existent id
+- Jest e2e config: `transformIgnorePatterns` for `uuid` v13 ESM compatibility
+- ESLint: disable `no-unsafe-member-access` and `no-unsafe-assignment` for test files
 
 ### Removed
 - Default `AppController`, `AppService`, and `AppController` spec (replaced by ReviewsModule)
