@@ -15,3 +15,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - `test/` with e2e test config
   - ESLint, Prettier, Jest 30, Supertest configured
   - Scripts: `start:dev`, `build`, `test`, `test:e2e`, `lint`
+- Runtime dependencies: `@nestjs/config`, `@nestjs/swagger`, `class-validator`, `class-transformer`, `uuid`
+- Dev dependency: `@types/uuid`
+- `main.ts` configured with:
+  - `NestExpressApplication` type for Express-specific APIs
+  - Body parser limit of 200KB (JSON)
+  - Global `ValidationPipe` (whitelist, forbidNonWhitelisted, transform)
+  - CORS restricted to `WEB_ORIGIN` env var (default `http://localhost:3000`)
+  - Swagger UI at `/docs` (title: AI Code Reviewer API, version 0.1.0)
+  - Port configurable via `PORT` env var (default 3001)
+- `AppModule` configured with `ConfigModule.forRoot({ isGlobal: true })`
+- `.env` file with `PORT`, `WEB_ORIGIN`, `REVIEW_TTL_MS`, `REVIEW_CLEANUP_INTERVAL_MS`
+- `.env.example` template with documented defaults
