@@ -27,3 +27,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `AppModule` configured with `ConfigModule.forRoot({ isGlobal: true })`
 - `.env` file with `PORT`, `WEB_ORIGIN`, `REVIEW_TTL_MS`, `REVIEW_CLEANUP_INTERVAL_MS`
 - `.env.example` template with documented defaults
+- `ReviewsModule` with full MVP API:
+  - `POST /reviews` — validates DTO, creates review with UUID, returns `{ id }`
+  - `GET /reviews/:id` — returns review result or 404 if not found/expired
+  - `ReviewsService` with in-memory `Map` storage, configurable TTL, and periodic cleanup via `setInterval`
+  - `OnModuleDestroy` implemented to clear cleanup interval (prevents leaks in tests/hot reload)
+  - Mock fixture returning a rich review result (summary, 2 positives, 3 issues with diffs, 3 suggestions, 2 questions, score 6)
+- Types: `Language` enum (javascript, typescript, python, go, java), `ReviewResult`, `ReviewRecord` interfaces
+- DTOs: `CreateReviewDto` (with class-validator decorators), `CreateReviewResponseDto`, `GetReviewResponseDto` (with Swagger decorators)
+- Swagger annotations: `@ApiTags`, `@ApiOperation`, `@ApiResponse`, `@ApiParam`, `@ApiProperty` on all endpoints and DTOs
+
+### Removed
+- Default `AppController`, `AppService`, and `AppController` spec (replaced by ReviewsModule)
