@@ -36,6 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Types: `Language` enum (javascript, typescript, python, go, java), `ReviewResult`, `ReviewRecord` interfaces
 - DTOs: `CreateReviewDto` (with class-validator decorators), `CreateReviewResponseDto`, `GetReviewResponseDto` (with Swagger decorators)
 - Swagger annotations: `@ApiTags`, `@ApiOperation`, `@ApiResponse`, `@ApiParam`, `@ApiProperty` on all endpoints and DTOs
+- `GET /health` endpoint — returns `{ "status": "ok" }` for uptime checks (Swagger documented)
 
 ### Removed
 - Default `AppController`, `AppService`, and `AppController` spec (replaced by ReviewsModule)
